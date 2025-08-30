@@ -1,0 +1,24 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.flask_session/
+
+# Data & local files
+data/
+vector_db/
+*.env
+*.log
+
+# React (frontend)
+chatbot-ui/node_modules/
+chatbot-ui/build/
+chatbot-ui/dist/
+chatbot-ui/.env*
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

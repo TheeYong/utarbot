@@ -1,0 +1,18 @@
+# services:
+#   - type: web
+#     name: utar-chatbot
+#     env: python
+#     plan: standard
+#     buildCommand: "pip install -r requirements.txt"
+#     startCommand: "gunicorn app:app --timeout 180 --workers 1 --threads 2 --preload"
+services:
+  - type: web
+    name: utar-chatbot
+    env: python
+    plan: standard
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --timeout 180 --workers 1 --threads 2 --preload"
+    disk:
+      name: vectordb-disk       
+      mountPath: /var/data      # place where the disk will be available
+      sizeGB: 10                
