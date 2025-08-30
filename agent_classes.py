@@ -117,7 +117,7 @@ class BaseAgent:
 
         return results
 
-    def scrape_web_pdfs(self, urls, department, base_folder="./data"):
+    def scrape_web_pdfs(self, urls, department, base_folder="/var/data"):
         """
         Scrapes a webpage for all linked PDFs and downloads them into a department folder.
         Handles UTAR's broken SSL for PDFs specifically.
@@ -220,7 +220,7 @@ class BaseAgent:
                 )
             else:
                 print(f"Creating vector database for {self.department}...")
-                doc_folder_path = f"./data/{self.department}"
+                doc_folder_path = f"/var/data/{self.department}"
 
                 # Load PDF data
                 pdf_data = self.ingest_pdf(doc_folder_path)
