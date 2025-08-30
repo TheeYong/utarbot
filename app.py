@@ -193,8 +193,8 @@ app.config['SESSION_USE_SIGNER'] = True
 Session(app)
 
 # Path for vector DB storage
+VECTOR_DB_EXTRACT_PATH = "/var/data"
 VECTOR_DB_FOLDER = "/var/data/vector_db"
-os.makedirs(VECTOR_DB_FOLDER, exist_ok=True)
 
 # ----------------------
 # Option 1: Unzip bundled vector DB at startup
@@ -202,11 +202,23 @@ os.makedirs(VECTOR_DB_FOLDER, exist_ok=True)
 BUNDLED_ZIP_PATH = "./vector_db.zip"  # Ensure this ZIP is included in your repo
 
 if os.path.exists(BUNDLED_ZIP_PATH):
-    logging.info(f"Unzipping bundled vector DB from {BUNDLED_ZIP_PATH} to {VECTOR_DB_FOLDER}")
+    # Create parent directory
+    os.makedirs(VECTOR_DB_EXTRACT_PATH, exist_ok=True)
+    
+    logging.info(f"Unzipping bundled vector DB from {BUNDLED_ZIP_PATH} to {VECTOR_DB_EXTRACT_PATH}")
     with zipfile.ZipFile(BUNDLED_ZIP_PATH, 'r') as zip_ref:
-        zip_ref.extractall(VECTOR_DB_FOLDER)
+        # Extract to /var/data so that vector_db folder is created there
+        zip_ref.extractall(VECTOR_DB_EXTRACT_PATH)
+    
+    # Verify the extraction worked
+    if os.path.exists(VECTOR_DB_FOLDER):
+        logging.info(f"Successfully extracted vector DB to {VECTOR_DB_FOLDER}")
+    else:
+        logging.error(f"Extraction failed - {VECTOR_DB_FOLDER} not found")
 else:
     logging.warning(f"No bundled vector DB ZIP found at {BUNDLED_ZIP_PATH}. Continuing without preload.")
+    # Create empty directory as fallback
+    os.makedirs(VECTOR_DB_FOLDER, exist_ok=True)
 
 # Initialize the agent orchestrator
 agent_orchestrator = AgentOrchestrator()

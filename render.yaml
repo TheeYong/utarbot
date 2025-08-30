@@ -14,10 +14,6 @@ services:
     plan: standard
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn app:app --timeout 180 --workers 1 --threads 2 --preload"
-    disk:
-      name: vectordb-disk
-      mountPath: /var/data
-      sizeGB: 10
 
   # Frontend (React in chatbot-ui/)
   - type: web
