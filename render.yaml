@@ -13,7 +13,8 @@ services:
     region: singapore
     plan: standard
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app --timeout 180 --workers 1 --threads 2 --preload"
+    startCommand: "gunicorn app:app --timeout 300 --workers 1 --threads 4"
+
 
   # # Frontend (React in chatbot-ui/)
   # - type: web
