@@ -15,10 +15,10 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn app:app --timeout 180 --workers 1 --threads 2 --preload"
 
-  # Frontend (React in chatbot-ui/)
-  - type: web
-    name: utar-chatbot-frontend
-    env: static
-    region: singapore
-    buildCommand: "npm install && npm run build"
-    staticPublishPath: chatbot-ui/build   # if Vite; use chatbot-ui/build if CRA
+  # # Frontend (React in chatbot-ui/)
+  # - type: web
+  #   name: utar-chatbot-frontend
+  #   env: static
+  #   region: singapore
+  #   buildCommand: "npm install && npm run build"
+  #   staticPublishPath: chatbot-ui/build   # if Vite; use chatbot-ui/build if CRA
