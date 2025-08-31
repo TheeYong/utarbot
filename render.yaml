@@ -1,10 +1,3 @@
-# services:
-#   - type: web
-#     name: utar-chatbot
-#     env: python
-#     plan: standard
-#     buildCommand: "pip install -r requirements.txt"
-#     startCommand: "gunicorn app:app --timeout 180 --workers 1 --threads 2 --preload"
 services:
   # Backend (Flask)
   - type: web
@@ -16,11 +9,3 @@ services:
     # Increased timeout for first-time database loading per department
     # Reduced workers to 1 but increased threads for better memory management
     startCommand: "gunicorn app:app --timeout 600 --workers 1 --threads 2 --max-requests 1000 --max-requests-jitter 100"
-
-  # # Frontend (React in chatbot-ui/)
-  # - type: web
-  #   name: utar-chatbot-frontend
-  #   env: static
-  #   region: singapore
-  #   buildCommand: "npm install && npm run build"
-  #   staticPublishPath: chatbot-ui/build   # if Vite; use chatbot-ui/build if CRA
