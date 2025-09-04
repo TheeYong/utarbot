@@ -19,10 +19,10 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
 
-# app.config['SESSION_TYPE'] = 'filesystem'
-# app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_TYPE'] = 'null'  # Use in-memory sessions
+app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
+# app.config['SESSION_FILE_DIR'] = './.flask_session/'
+# app.config['SESSION_USE_SIGNER'] = True
 
 Session(app)
 
@@ -85,7 +85,7 @@ def chat():
         else:
             actual_response = str(response_content)
         
-        history.append({'role':'system', 'content': actual_response})
+        history.append({'role':'assistant', 'content': actual_response})
         session['chat_history'] = history[-6:]
         
         return jsonify({
