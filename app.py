@@ -60,7 +60,11 @@ def chat():
     try:
         data = request.get_json()
         query = data.get('question')
-        history = session.get('chat_history', [])
+        session_id = data.get('session_id', 'default')
+        history = data.get('history', [])  # Get history from request instead of session
+
+        logging.info(f"Session ID: {session_id}")
+        logging.info(f"History length: {len(history)}")
 
         if not query:
             return jsonify({'error': 'No question provided'}), 400
