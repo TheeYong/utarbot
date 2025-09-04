@@ -19,10 +19,10 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
 
-app.config['SESSION_TYPE'] = 'filesystem'
+# app.config['SESSION_TYPE'] = 'filesystem'
+# app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_TYPE'] = 'null'  # Use in-memory sessions
 app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_FILE_DIR'] = './.flask_session/'
-app.config['SESSION_USE_SIGNER'] = True
 
 Session(app)
 
@@ -60,11 +60,12 @@ def chat():
     try:
         data = request.get_json()
         query = data.get('question')
-        session_id = data.get('session_id', 'default')
-        history = data.get('history', [])  # Get history from request instead of session
+        history = session.get('chat_history', [])
 
-        logging.info(f"Session ID: {session_id}")
-        logging.info(f"History length: {len(history)}")
+        # ADD THESE DEBUG LINES
+        logging.info(f"Session ID: {session.get('_id', 'No session ID')}")
+        logging.info(f"Current history length: {len(history)}")
+        logging.info(f"History: {history}")
 
         if not query:
             return jsonify({'error': 'No question provided'}), 400
