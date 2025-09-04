@@ -60,7 +60,7 @@ def chat():
     try:
         data = request.get_json()
         query = data.get('question')
-        history = data.get('history', [])
+        history = session.get('chat_history', [])
 
         # ADD THESE DEBUG LINES
         logging.info(f"Session ID: {session.get('_id', 'No session ID')}")
@@ -74,23 +74,24 @@ def chat():
         
         result = agent_orchestrator.process_query(query, history)
 
-        # Handle the response format properly
-        response_content = result['response']
-        references = []
+        # # Handle the response format properly
+        # response_content = result['response']
+        # references = []
         
-        # Extract response and references if they exist
-        if isinstance(response_content, dict):
-            actual_response = response_content.get('response', str(response_content))
-            references = response_content.get('references', [])
-        else:
-            actual_response = str(response_content)
+        # # Extract response and references if they exist
+        # if isinstance(response_content, dict):
+        #     actual_response = response_content.get('response', str(response_content))
+        #     references = response_content.get('references', [])
+        # else:
+        #     actual_response = str(response_content)
         
-        history.append({'role':'assistant', 'content': actual_response})
+        history.append({'role':'assistant', 'content': result['response']})
+        logging.info(f"Final History List: {history}")
         session['chat_history'] = history[-6:]
         
         return jsonify({
-            'response': actual_response,
-            'references': references,
+            'response': result['response'],
+            'references': result['references'],
             'agent': {
                 'name': result['agent_name'],
                 'description': result['agent_description']
