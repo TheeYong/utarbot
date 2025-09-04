@@ -60,7 +60,7 @@ def chat():
     try:
         data = request.get_json()
         query = data.get('question')
-        history = session.get('chat_history', [])
+        history = data.get('history', [])
 
         # ADD THESE DEBUG LINES
         logging.info(f"Session ID: {session.get('_id', 'No session ID')}")
