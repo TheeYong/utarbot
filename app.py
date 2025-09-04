@@ -23,6 +23,9 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_FILE_DIR'] = './.flask_session/'
 app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = "None"
+app.config['SESSION_COOKIE_SECURE'] = True
+
 
 Session(app)
 
@@ -88,6 +91,7 @@ def chat():
         history.append({'role':'assistant', 'content': result['response']})
         logging.info(f"Final History List: {history}")
         session['chat_history'] = history[-6:]
+        session.modified = True
         
         return jsonify({
             'response': result['response'],
