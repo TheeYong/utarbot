@@ -21,8 +21,8 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
 
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
-# app.config['SESSION_FILE_DIR'] = './.flask_session/'
-# app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_FILE_DIR'] = './.flask_session/'
+app.config['SESSION_USE_SIGNER'] = True
 
 Session(app)
 
@@ -91,7 +91,7 @@ def chat():
         
         return jsonify({
             'response': result['response'],
-            'references': result['references'],
+            # 'references': result['references'],
             'agent': {
                 'name': result['agent_name'],
                 'description': result['agent_description']
