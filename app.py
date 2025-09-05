@@ -91,8 +91,8 @@ def chat():
         history.append({'role':'assistant', 'content': result['response']})
         logging.info(f"Final History List: {history}")
         session['chat_history'] = history[-6:]
-        session.modified = True
-        
+        # session.modified = True
+
         return jsonify({
             'response': result['response'],
             # 'references': result['references'],
