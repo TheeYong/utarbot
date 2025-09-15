@@ -1,3 +1,4 @@
+import uuid
 from flask import Flask, request, jsonify, session
 from flask_session import Session
 from flask_cors import CORS
@@ -9,9 +10,18 @@ from agent_orchestrator import AgentOrchestrator
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.FileHandler("chatbot_debug.log"), logging.StreamHandler()]
+    format='%(asctime)s - %(levelname)s - [Session %(session_id)s] - %(message)s',
+    handlers=[logging.StreamHandler()]
 )
+
+class SessionAdapter(logging.LoggerAdapter):
+    """Attach session_id automatically to all logs"""
+    def process(self, msg, kwargs):
+        sid = session.get("session_id", "NoSession") if session else "NoSession"
+        kwargs["extra"] = {"session_id": sid}
+        return msg, kwargs
+
+logger = SessionAdapter(logging.getLogger(__name__), {})
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
@@ -33,30 +43,36 @@ Session(app)
 VECTOR_DB_EXTRACT_PATH = "/var/data"
 VECTOR_DB_FOLDER = "/var/data/vector_db"
 
-BUNDLED_ZIP_PATH = "./vector_db.zip"  # Ensure this ZIP is included in your repo
+BUNDLED_ZIP_PATH = "./vector_db.zip"  
 
 if os.path.exists(BUNDLED_ZIP_PATH):
     # Create parent directory
     os.makedirs(VECTOR_DB_EXTRACT_PATH, exist_ok=True)
     
-    logging.info(f"Unzipping bundled vector DB from {BUNDLED_ZIP_PATH} to {VECTOR_DB_EXTRACT_PATH}")
+    logger.info(f"Unzipping bundled vector DB from {BUNDLED_ZIP_PATH} to {VECTOR_DB_EXTRACT_PATH}")
     with zipfile.ZipFile(BUNDLED_ZIP_PATH, 'r') as zip_ref:
         # Extract to /var/data so that vector_db folder is created there
         zip_ref.extractall(VECTOR_DB_EXTRACT_PATH)
     
     # Verify the extraction worked
     if os.path.exists(VECTOR_DB_FOLDER):
-        logging.info(f"Successfully extracted vector DB to {VECTOR_DB_FOLDER}")
+        logger.info(f"Successfully extracted vector DB to {VECTOR_DB_FOLDER}")
     else:
-        logging.error(f"Extraction failed - {VECTOR_DB_FOLDER} not found")
+        logger.error(f"Extraction failed - {VECTOR_DB_FOLDER} not found")
 else:
-    logging.warning(f"No bundled vector DB ZIP found at {BUNDLED_ZIP_PATH}. Continuing without preload.")
+    logger.warning(f"No bundled vector DB ZIP found at {BUNDLED_ZIP_PATH}. Continuing without preload.")
     # Create empty directory as fallback
     os.makedirs(VECTOR_DB_FOLDER, exist_ok=True)
 
 # Initialize the agent orchestrator
 agent_orchestrator = AgentOrchestrator()
-logging.info("Agent orchestrator initialized. Vector databases will be loaded on-demand.")
+logger.info("Agent orchestrator initialized. Vector databases will be loaded on-demand.")
+
+@app.before_request
+def assign_session_id():
+    """Ensure every user gets a unique session ID for each session"""
+    if "session_id" not in session:
+        session["session_id"] = str(uuid.uuid4())
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -66,9 +82,10 @@ def chat():
         history = session.get('chat_history', [])
 
         # ADD THESE DEBUG LINES
-        logging.info(f"Session ID: {session.get('_id', 'No session ID')}")
-        logging.info(f"Current history length: {len(history)}")
-        logging.info(f"History: {history}")
+        # logging.info(f"Session ID: {session.get('_id', 'No session ID')}")
+        logger.info(f"Incoming question: {query}")
+        logger.info(f"Current history length: {len(history)}")
+        # logging.info(f"History: {history}")
 
         if not query:
             return jsonify({'error': 'No question provided'}), 400
@@ -89,13 +106,15 @@ def chat():
         #     actual_response = str(response_content)
         
         history.append({'role':'assistant', 'content': result['response']})
-        logging.info(f"Final History List: {history}")
+        # logging.info(f"Final History List: {history}")
         session['chat_history'] = history[-6:]
         # session.modified = True
 
+        logger.info(f"Answer: {result['response']}")
+        logger.debug(f"Updated history: {session['chat_history']}")
+
         return jsonify({
             'response': result['response'],
-            # 'references': result['references'],
             'agent': {
                 'name': result['agent_name'],
                 'description': result['agent_description']
@@ -103,7 +122,7 @@ def chat():
         })
         
     except Exception as e:
-        logging.error(f"Error in chat endpoint: {e}")
+        logger.error(f"Error in chat endpoint: {e}")
         return jsonify({
             'response': "I apologize, but I'm experiencing technical difficulties. If this is your first query to a specific department, the database might still be loading. Please try again in a moment.",
             'references': [],
